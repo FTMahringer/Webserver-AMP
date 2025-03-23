@@ -1,0 +1,52 @@
+services:
+  php-apache:
+    image: php:8.4-apache  # Use latest PHP version with Apache
+    container_name: ftm_php_apache
+    ports:
+      - "8080:80"
+    volumes:
+      - ./app:/var/www/html
+      - ./php/php.ini:/usr/local/etc/php/php.ini
+    networks:
+      - app_network
+    environment:
+      - APACHE_RUN_USER=#33
+      - APACHE_RUN_GROUP=#33
+
+  mariadb:
+    image: mariadb:latest
+    container_name: ftm_mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: mydatabase
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "4306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - app_network
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: ftm_phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mariadb
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "8081:80"
+    depends_on:
+      - mariadb
+    networks:
+      - app_network
+
+volumes:
+  mariadb_data:
+
+networks:
+  app_network:
+    driver: bridge
